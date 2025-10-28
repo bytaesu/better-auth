@@ -58,6 +58,9 @@ const config = {
 	experimental: {
 		turbopackFileSystemCacheForDev: true,
 	},
+	outputFileTracingIncludes: {
+		"/llms.txt/**/*": ["./content/**/*"],
+	},
 };
 
 export default withMDX(config);
