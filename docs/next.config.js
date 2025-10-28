@@ -57,9 +57,9 @@ const config = {
 	},
 	experimental: {
 		turbopackFileSystemCacheForDev: true,
-	},
-	outputFileTracingIncludes: {
-		"/llms.txt/**/*": ["./content/**/*"],
+		outputFileTracingIncludes: {
+			'/llms.txt/**/*': ['./content/**/*'],
+		},
 	},
 };
 
