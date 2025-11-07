@@ -64,8 +64,8 @@ export interface DrizzleAdapterConfig {
 	/**
 	 * Whether to execute multiple operations in a transaction.
 	 *
-	 * If the database doesn't support transactions,
-	 * set this to `false` and operations will be executed sequentially.
+	 * - `true`: operations run in a transaction and if one fails all are rolled back
+	 * - `false` (default): operations run sequentially without rollback on failure
 	 * @default false
 	 */
 	transaction?: boolean | undefined;
