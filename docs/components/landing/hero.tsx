@@ -128,7 +128,7 @@ export default function Hero() {
 							<div className="mt-4 flex w-fit flex-col gap-4 font-sans md:flex-row md:justify-center lg:justify-start items-center">
 								<Link
 									href="/docs"
-									className="hover:shadow-sm dark:border-stone-100 dark:hover:shadow-sm border-2 border-black bg-white px-4 py-1.5 text-sm uppercase text-black shadow-[1px_1px_rgba(0,0,0),2px_2px_rgba(0,0,0),3px_3px_rgba(0,0,0),4px_4px_rgba(0,0,0),5px_5px_0px_0px_rgba(0,0,0)] transition duration-200 md:px-8 dark:shadow-[1px_1px_rgba(255,255,255),2px_2px_rgba(255,255,255),3px_3px_rgba(255,255,255),4px_4px_rgba(255,255,255),5px_5px_0px_0px_rgba(255,255,255)]"
+									className="text-black bg-white border-black dark:border-stone-400 border-2 hover:shadow-sm active:shadow-sm dark:active:shadow-sm dark:hover:shadow-sm px-4 py-1.5 text-sm uppercase transition duration-200 md:px-8 shadow-[1px_1px_#000000,2px_2px_#000000,3px_3px_#000000,4px_4px_#000000,5px_5px_0px_0px_#000000] dark:shadow-[1px_1px_#a6a09b,2px_2px_#a6a09b,3px_3px_#a6a09b,4px_4px_#a6a09b,5px_5px_0px_0px_#a6a09b]"
 								>
 									Get Started
 								</Link>
