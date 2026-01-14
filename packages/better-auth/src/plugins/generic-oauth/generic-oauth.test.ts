@@ -94,6 +94,7 @@ describe("oauth2", async () => {
 		if (!location) throw new Error("No redirect location found");
 
 		let callbackURL = "";
+		let setCookieHeader = "";
 		const newHeaders = new Headers();
 		await betterFetch(location, {
 			method: "GET",
@@ -101,11 +102,12 @@ describe("oauth2", async () => {
 			headers,
 			onError(context) {
 				callbackURL = context.response.headers.get("location") || "";
+				setCookieHeader = context.response.headers.get("set-cookie") || "";
 				cookieSetter(newHeaders)(context);
 			},
 		});
 
-		return { callbackURL, headers: newHeaders };
+		return { callbackURL, headers: newHeaders, setCookieHeader };
 	}
 
 	it("should redirect to the provider and handle the response", async () => {
@@ -127,6 +129,28 @@ describe("oauth2", async () => {
 			headers,
 		);
 		expect(callbackURL).toBe("http://localhost:3000/dashboard");
+	});
+
+	it("should delete state cookie with path attribute", async () => {
+		let headers = new Headers();
+		const signInRes = await authClient.signIn.oauth2({
+			providerId: "test",
+			callbackURL: "http://localhost:3000/dashboard",
+			fetchOptions: {
+				onSuccess: cookieSetter(headers),
+			},
+		});
+
+		const { setCookieHeader } = await simulateOAuthFlow(
+			signInRes.data?.url || "",
+			headers,
+		);
+
+		const cookies = parseSetCookieHeader(setCookieHeader);
+		const stateCookie = cookies.get("better-auth.state");
+
+		expect(stateCookie?.["max-age"]).toBe(0);
+		expect(stateCookie?.path).toBe("/");
 	});
 
 	it("should redirect to the provider and handle the response for a new user", async () => {
