@@ -170,6 +170,7 @@ export async function parseState(c: GenericEndpointContext) {
 
 		// Clear the cookie after successful parsing
 		c.setCookie(stateCookie.name, "", {
+			...stateCookie.attributes,
 			maxAge: 0,
 		});
 	} else {
@@ -201,6 +202,7 @@ export async function parseState(c: GenericEndpointContext) {
 			throw c.redirect(`${errorURL}?error=state_mismatch`);
 		}
 		c.setCookie(stateCookie.name, "", {
+			...stateCookie.attributes,
 			maxAge: 0,
 		});
 
