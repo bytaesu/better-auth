@@ -2,7 +2,7 @@ import type { GenericEndpointContext } from "@better-auth/core";
 import { APIError } from "@better-auth/core/error";
 import { createHMAC } from "@better-auth/utils/hmac";
 import { getSessionFromCtx } from "../../api";
-import { setSessionCookie } from "../../cookies";
+import { expireCookie, setSessionCookie } from "../../cookies";
 import {
 	TRUST_DEVICE_COOKIE_MAX_AGE,
 	TRUST_DEVICE_COOKIE_NAME,
@@ -71,9 +71,7 @@ export async function verifyTwoFactor(ctx: GenericEndpointContext) {
 					user,
 				});
 				// Always clear the two factor cookie after successful verification
-				ctx.setCookie(cookieName.name, "", {
-					maxAge: 0,
-				});
+				expireCookie(ctx, ctx.context.createAuthCookie(TWO_FACTOR_COOKIE_NAME));
 				if (ctx.body.trustDevice) {
 					const trustDeviceCookie = ctx.context.createAuthCookie(
 						TRUST_DEVICE_COOKIE_NAME,
@@ -96,9 +94,7 @@ export async function verifyTwoFactor(ctx: GenericEndpointContext) {
 						trustDeviceCookie.attributes,
 					);
 					// delete the dont remember me cookie
-					ctx.setCookie(ctx.context.authCookies.dontRememberToken.name, "", {
-						maxAge: 0,
-					});
+					expireCookie(ctx, ctx.context.authCookies.dontRememberToken);
 				}
 				return ctx.json({
 					token: session.token,

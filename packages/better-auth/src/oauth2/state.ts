@@ -2,6 +2,7 @@ import type { GenericEndpointContext } from "@better-auth/core";
 import { APIError, BASE_ERROR_CODES } from "@better-auth/core/error";
 import * as z from "zod";
 import { setOAuthState } from "../api/middlewares/oauth";
+import { expireCookie } from "../cookies";
 import {
 	generateRandomString,
 	symmetricDecrypt,
@@ -169,10 +170,7 @@ export async function parseState(c: GenericEndpointContext) {
 		}
 
 		// Clear the cookie after successful parsing
-		c.setCookie(stateCookie.name, "", {
-			...stateCookie.attributes,
-			maxAge: 0,
-		});
+		expireCookie(c, stateCookie);
 	} else {
 		// Default: database strategy
 		const data = await c.context.internalAdapter.findVerificationValue(state);
@@ -201,10 +199,7 @@ export async function parseState(c: GenericEndpointContext) {
 				c.context.options.onAPIError?.errorURL || `${c.context.baseURL}/error`;
 			throw c.redirect(`${errorURL}?error=state_mismatch`);
 		}
-		c.setCookie(stateCookie.name, "", {
-			...stateCookie.attributes,
-			maxAge: 0,
-		});
+		expireCookie(c, stateCookie);
 
 		// Delete verification value after retrieval
 		await c.context.internalAdapter.deleteVerificationValue(data.id);

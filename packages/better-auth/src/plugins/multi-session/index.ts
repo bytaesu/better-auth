@@ -7,10 +7,12 @@ import * as z from "zod";
 import { APIError, sessionMiddleware } from "../../api";
 import {
 	deleteSessionCookie,
+	expireCookie,
 	parseCookies,
 	parseSetCookieHeader,
 	setSessionCookie,
 } from "../../cookies";
+import { SECURE_COOKIE_PREFIX } from "../../cookies/cookie-utils";
 
 declare module "@better-auth/core" {
 	// biome-ignore lint/correctness/noUnusedVariables: Auth and Context need to be same as declared in the module
@@ -175,9 +177,9 @@ export const multiSession = (options?: MultiSessionConfig | undefined) => {
 					const session =
 						await ctx.context.internalAdapter.findSession(sessionToken);
 					if (!session || session.session.expiresAt < new Date()) {
-						ctx.setCookie(multiSessionCookieName, "", {
-							...ctx.context.authCookies.sessionToken.options,
-							maxAge: 0,
+						expireCookie(ctx, {
+							name: multiSessionCookieName,
+							options: ctx.context.authCookies.sessionToken.options,
 						});
 						throw APIError.from(
 							"UNAUTHORIZED",
@@ -250,9 +252,9 @@ export const multiSession = (options?: MultiSessionConfig | undefined) => {
 					}
 
 					await ctx.context.internalAdapter.deleteSession(sessionToken);
-					ctx.setCookie(multiSessionCookieName, "", {
-						...ctx.context.authCookies.sessionToken.options,
-						maxAge: 0,
+					expireCookie(ctx, {
+						name: multiSessionCookieName,
+						options: ctx.context.authCookies.sessionToken.options,
 					});
 					const isActive = ctx.context.session?.session.token === sessionToken;
 					if (!isActive) return ctx.json({ status: true });
@@ -351,14 +353,15 @@ export const multiSession = (options?: MultiSessionConfig | undefined) => {
 										ctx.context.secret,
 									);
 									if (verifiedToken) {
-										ctx.setCookie(
-											key.toLowerCase().replace("__secure-", "__Secure-"),
-											"",
-											{
-												...ctx.context.authCookies.sessionToken.options,
-												maxAge: 0,
-											},
-										);
+										expireCookie(ctx, {
+											name: key
+												.toLowerCase()
+												.replace(
+													SECURE_COOKIE_PREFIX.toLowerCase(),
+													SECURE_COOKIE_PREFIX,
+												),
+											options: ctx.context.authCookies.sessionToken.options,
+										});
 										return verifiedToken;
 									}
 									return null;
