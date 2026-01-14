@@ -1,6 +1,7 @@
 import type { BetterAuthOptions } from "@better-auth/core";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
+	expireCookie,
 	getCookieCache,
 	getCookies,
 	getSessionCookie,
@@ -14,6 +15,40 @@ import {
 	SECURE_COOKIE_PREFIX,
 	stripSecureCookiePrefix,
 } from "./cookie-utils";
+
+describe("expireCookie", () => {
+	it("preserves attributes with options format", () => {
+		const setCookie = vi.fn();
+		expireCookie({ setCookie } as any, {
+			name: "test",
+			options: {
+				path: "/custom",
+				httpOnly: true,
+			},
+		});
+		expect(setCookie).toHaveBeenCalledWith("test", "", {
+			path: "/custom",
+			httpOnly: true,
+			maxAge: 0,
+		});
+	});
+
+	it("preserves attributes with attributes format", () => {
+		const setCookie = vi.fn();
+		expireCookie({ setCookie } as any, {
+			name: "test",
+			attributes: {
+				path: "/custom",
+				httpOnly: true,
+			},
+		});
+		expect(setCookie).toHaveBeenCalledWith("test", "", {
+			path: "/custom",
+			httpOnly: true,
+			maxAge: 0,
+		});
+	});
+});
 
 describe("cookies", async () => {
 	const { client, testUser } = await getTestInstance();

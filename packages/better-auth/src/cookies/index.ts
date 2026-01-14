@@ -1,4 +1,5 @@
 import type {
+	BetterAuthCookie,
 	BetterAuthCookies,
 	BetterAuthOptions,
 	GenericEndpointContext,
@@ -293,25 +294,30 @@ export async function setSessionCookie(
 	}
 }
 
+/**
+ * Expires a cookie by setting `maxAge: 0` while preserving its attributes
+ */
+export function expireCookie(
+	ctx: GenericEndpointContext,
+	cookie: BetterAuthCookie,
+) {
+	const cookieOptions =
+		"options" in cookie ? cookie.options : cookie.attributes;
+	ctx.setCookie(cookie.name, "", {
+		...cookieOptions,
+		maxAge: 0,
+	});
+}
+
 export function deleteSessionCookie(
 	ctx: GenericEndpointContext,
 	skipDontRememberMe?: boolean | undefined,
 ) {
-	ctx.setCookie(ctx.context.authCookies.sessionToken.name, "", {
-		...ctx.context.authCookies.sessionToken.options,
-		maxAge: 0,
-	});
-
-	ctx.setCookie(ctx.context.authCookies.sessionData.name, "", {
-		...ctx.context.authCookies.sessionData.options,
-		maxAge: 0,
-	});
+	expireCookie(ctx, ctx.context.authCookies.sessionToken);
+	expireCookie(ctx, ctx.context.authCookies.sessionData);
 
 	if (ctx.context.options.account?.storeAccountCookie) {
-		ctx.setCookie(ctx.context.authCookies.accountData.name, "", {
-			...ctx.context.authCookies.accountData.options,
-			maxAge: 0,
-		});
+		expireCookie(ctx, ctx.context.authCookies.accountData);
 
 		//clean up the account data chunks
 		const accountStore = createAccountStore(
@@ -324,11 +330,7 @@ export function deleteSessionCookie(
 	}
 
 	if (ctx.context.oauthConfig.storeStateStrategy === "cookie") {
-		const stateCookie = ctx.context.createAuthCookie("oauth_state");
-		ctx.setCookie(stateCookie.name, "", {
-			...stateCookie.attributes,
-			maxAge: 0,
-		});
+		expireCookie(ctx, ctx.context.createAuthCookie("oauth_state"));
 	}
 
 	// Use createSessionStore to clean up all session data chunks
@@ -341,10 +343,7 @@ export function deleteSessionCookie(
 	sessionStore.setCookies(cleanCookies);
 
 	if (!skipDontRememberMe) {
-		ctx.setCookie(ctx.context.authCookies.dontRememberToken.name, "", {
-			...ctx.context.authCookies.dontRememberToken.options,
-			maxAge: 0,
-		});
+		expireCookie(ctx, ctx.context.authCookies.dontRememberToken);
 	}
 }
 
